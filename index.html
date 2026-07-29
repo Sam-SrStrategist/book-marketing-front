@@ -1296,6 +1296,29 @@ h1, h2, h3, p, li, td, .feat { overflow-wrap: anywhere; }
       err.style.display = 'block'; return;
     }
     err.style.display = 'none';
+
+    /* notify on proposal access (fire and forget so entry is never blocked) */
+    try {
+      var ph = (document.getElementById('gPhone') || {}).value || '';
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: 'Marketing Proposal Accessed \u00b7 ' + n,
+          from_name: 'Marketing Proposal Access Gate',
+          request_type: 'Proposal Access',
+          name: n,
+          email: e,
+          phone: ph.trim(),
+          confidentiality_acknowledged: 'Yes',
+          accessed_at: new Date().toLocaleString()
+        })
+      }).then(function(r){ return r.json(); })
+        .then(function(d){ if(!d || !d.success) console.error('Access notification failed:', d && d.message); })
+        .catch(function(x){ console.error('Access notification failed:', x); });
+    } catch(x){ console.error('Access notification error:', x); }
+
     document.getElementById('gate').classList.add('hidden');
     document.body.classList.add('unlocked');
     var au = document.getElementById('walkAudio');
